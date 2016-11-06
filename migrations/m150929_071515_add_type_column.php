@@ -5,12 +5,12 @@ use yii\db\Migration;
 
 class m150929_071515_add_type_column extends Migration
 {
-    public function up()
+    public function safeUp()
     {
-        $this->addColumn('{{%menu_item}}', 'type', "ENUM('system','user-defined') NOT NULL DEFAULT 'user-defined'");
+        $this->addColumn('{{%menu_item}}', 'type', "pages_type NOT NULL DEFAULT 'user-defined'");
     }
 
-    public function down()
+    public function safeDown()
     {
         $this->dropColumn('{{%menu_item}}', 'type');
     }

@@ -36,8 +36,9 @@ class Menu extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'max_level'], 'required'],
-            ['max_level', 'integer'],
-            [['name'], 'string', 'max' => 255]
+            [['max_level', 'position'], 'integer'],
+            [['name'], 'string', 'max' => 255],
+            [['position'], 'default', 'value' => 1],
         ];
     }
 

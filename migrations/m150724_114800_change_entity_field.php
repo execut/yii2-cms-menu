@@ -5,12 +5,13 @@ use yii\db\Migration;
 
 class m150724_114800_change_entity_field extends Migration
 {
-    public function up()
+    public function safeUp()
     {
-        $this->alterColumn('{{%menu_item}}', 'entity', Schema::TYPE_STRING.'(255) NOT NULL DEFAULT \'page\'');
+        $this->dropColumn('{{%menu_item}}', 'entity');
+        $this->addColumn('{{%menu_item}}', 'entity', $this->string()->notNull()->defaultValue('page'));
     }
 
-    public function down()
+    public function safeDown()
     {
         echo "m150724_114800_change_entity_field cannot be reverted.\n";
 

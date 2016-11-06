@@ -80,7 +80,7 @@ class Menu extends \infoweb\menu\models\Menu
                 ];
             }
 
-            if ($settings['subMenu'] == true) {
+            if (!empty($settings['subMenu'])) {
                 // Get the item's children
                 $children = $this->getTree([
                     'parentId'          => $menuItem->id,

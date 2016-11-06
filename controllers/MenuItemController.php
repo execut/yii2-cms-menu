@@ -106,8 +106,9 @@ class MenuItemController extends Controller
     public function actionIndex()
     {
         // Store the active menu-id in a session var if it is provided through the url
-        if (Yii::$app->request->get('menu-id') != null)
+        if (Yii::$app->request->get('menu-id') != null) {
             Yii::$app->session->set('menu-items.menu-id', Yii::$app->request->get('menu-id'));
+        }
 
         $searchModel = new MenuItemSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);

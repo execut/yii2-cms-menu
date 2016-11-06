@@ -73,7 +73,7 @@ class MenuItem extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['menu_id', 'active', 'parent_id', 'level', 'position', 'public'], 'integer'],
+            [['menu_id', 'active', 'parent_id', 'level', 'position', 'public', 'created_at', 'updated_at'], 'integer'],
             ['public', 'default', 'value' => Yii::$app->getModule('menu')->defaultPublicVisibility],
             [['url', 'anchor', 'type'], 'string', 'max' => 255],
             // Required
@@ -262,12 +262,17 @@ class MenuItem extends \yii\db\ActiveRecord
     public function nextPosition()
     {
         $result = (new Query)
-                    ->select('IFNULL(MAX(`position`),0) + 1 AS `position`')
+                    ->select([
+                        'position' => 'MAX(position)'
+                    ])
                     ->from($this->tableName())
                     ->where(['level' => $this->level, 'parent_id' => $this->parent_id, 'menu_id' => $this->menu_id])
-                    ->one();
+                    ->scalar();
+        if (!$result) {
+            $result = 1;
+        }
 
-        return $result['position'];
+        return $result;
     }
 
     /**

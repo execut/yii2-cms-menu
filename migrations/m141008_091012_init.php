@@ -5,7 +5,7 @@ use yii\db\Migration;
 
 class m141008_091012_init extends Migration
 {
-    public function up()
+    public function safeUp()
     {
         $tableOptions = null;
 
@@ -16,55 +16,59 @@ class m141008_091012_init extends Migration
         // Drop the default user table
         if ($this->db->schema->getTableSchema('menu', true) !== null) {
             $this->dropTable('{{%menu}}');
-        }        
+        }
+
+        if ($this->db->driverName === 'pgsql') {
+            $this->execute('CREATE TYPE menu_item_entity AS ENUM (\'page\',\'menu-item\', \'url\')');
+        }
 
         // Create 'menu' table
         $this->createTable('{{%menu}}', [
-            'id'                    => Schema::TYPE_PK,
-            'name'                  => Schema::TYPE_STRING . '(255) NOT NULL',
-            'max_level'             => 'TINYINT(3) UNSIGNED NOT NULL DEFAULT \'2\'',
-            'created_at'            => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL',
-            'updated_at'            => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL',
+            'id'                    => $this->primaryKey(),
+            'name'                  => $this->string()->notNull(),
+            'max_level'             => $this->integer(3)->unsigned()->notNull()->defaultValue(2),
+            'created_at'            => $this->integer()->unsigned()->notNull(),
+            'updated_at'            => $this->integer()->unsigned()->notNull(),
         ], $tableOptions);
 
         // Create 'menu_item' table
         $this->createTable('{{%menu_item}}', [
-            'id'                    => Schema::TYPE_PK,
-            'menu_id'               => Schema::TYPE_INTEGER . ' NOT NULL',
-            'parent_id'             => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL',
-            'entity'                => "ENUM('page','menu-item', 'url') NOT NULL DEFAULT 'page'",
-            'entity_id'             => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL',
-            'level'                 => 'TINYINT(3) UNSIGNED NOT NULL DEFAULT \'0\'',
-            'url'                   => Schema::TYPE_STRING . '(255) NOT NULL',
-            'position'              => 'TINYINT(3) UNSIGNED NOT NULL DEFAULT \'0\'',
-            'active'                => 'TINYINT(3) UNSIGNED NOT NULL DEFAULT \'1\'',
-            'created_at'            => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL',
-            'updated_at'            => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL',
+            'id'                    => $this->primaryKey(),
+            'menu_id'               => $this->integer()->notNull(),
+            'parent_id'             => $this->integer()->unsigned()->notNull(),
+            'entity'                => "menu_item_entity NOT NULL DEFAULT 'page'",
+            'entity_id'             => $this->integer()->unsigned()->notNull(),
+            'level'                 => $this->integer()->notNull()->defaultValue('0'),
+            'url'                   => $this->string()->notNull(),
+            'position'              => $this->integer()->notNull()->defaultValue('0'),
+            'active'                => $this->integer(3)->unsigned()->notNull()->defaultValue('1'),
+            'created_at'            => $this->integer()->unsigned()->notNull(),
+            'updated_at'            => $this->integer()->unsigned()->notNull(),
         ], $tableOptions);
         
         // Create indexes on the 'menu_item' table
-        $this->createIndex('menu_id', '{{%menu_item}}', 'menu_id');
-        $this->createIndex('parent_id', '{{%menu_item}}', 'parent_id');
-        $this->createIndex('entity', '{{%menu_item}}', 'entity');
-        $this->createIndex('entity_id', '{{%menu_item}}', 'entity_id');
+        $this->createIndex('menu_item_menu_id_i', '{{%menu_item}}', 'menu_id');
+        $this->createIndex('menu_item_parent_id_i', '{{%menu_item}}', 'parent_id');
+        $this->createIndex('menu_item_entity_i', '{{%menu_item}}', 'entity');
+        $this->createIndex('menu_item_entity_id_i', '{{%menu_item}}', 'entity_id');
         $this->addForeignKey('FK_MENU_ITEM_MENU_ID', '{{%menu_item}}', 'menu_id', '{{%menu}}', 'id', 'CASCADE', 'RESTRICT');
 
         // Create 'menu_item_lang' table
         $this->createTable('{{%menu_item_lang}}', [
-            'menu_item_id'               => Schema::TYPE_INTEGER . ' NOT NULL',
-            'language'              => Schema::TYPE_STRING . '(10) NOT NULL',
-            'name'                  => Schema::TYPE_STRING . '(255) NOT NULL',
-            'created_at'            => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL',
-            'updated_at'            => Schema::TYPE_INTEGER . ' UNSIGNED NOT NULL'
+            'menu_item_id'               => $this->integer()->notNull(),
+            'language'              => $this->string(10)->notNull(),
+            'name'                  => $this->string()->notNull(),
+            'created_at'            => $this->integer()->unsigned()->notNull(),
+            'updated_at'            => $this->integer()->unsigned()->notNull()
         ], $tableOptions);
        
         // Create indexes on the 'menu_item_lang' table
         $this->addPrimaryKey('menu_item_menu_id_language', '{{%menu_item_lang}}', ['menu_item_id', 'language']);
-        $this->createIndex('language', '{{%menu_item_lang}}', 'language');
+        $this->createIndex('menu_item_lang_language_i', '{{%menu_item_lang}}', 'language');
         $this->addForeignKey('FK_MENU_ITEM_LANG_MENU_ITEM_ID', '{{%menu_item_lang}}', 'menu_item_id', '{{%menu_item}}', 'id', 'CASCADE', 'RESTRICT');
     }
 
-    public function down()
+    public function safeDown()
     {
         $this->dropTable('menu_item_lang');
         $this->dropTable('menu_item');
